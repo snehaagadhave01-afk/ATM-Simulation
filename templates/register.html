@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Open an account | Secure ATM{% endblock %}
+{% block content %}
+<div class="auth-shell">
+    <div class="card">
+        <h1>Open an account</h1>
+        <p class="muted">Takes under a minute. You'll get an account number right away.</p>
+
+        <form action="/register" method="POST" class="form">
+            <label>Full name</label>
+            <input type="text" name="full_name" required autofocus>
+
+            <label>Email</label>
+            <input type="email" name="email" required>
+
+            <label>Phone</label>
+            <input type="tel" name="phone" pattern="[0-9]{10,15}" required>
+
+            <label>Password</label>
+            <input type="password" name="password" minlength="8" required>
+            <small>At least 8 characters.</small>
+
+            <label>4-digit PIN</label>
+            <input type="password" name="pin" pattern="[0-9]{4}" maxlength="4" inputmode="numeric" required>
+            <small>You'll enter this to approve withdrawals and transfers.</small>
+
+            <button type="submit" class="btn btn-primary">Create account</button>
+        </form>
+
+        <p class="muted" style="margin-top:18px;">Already registered? <a href="/login">Log in</a></p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Secure ATM{% endblock %}
+{% block content %}
+<div class="hero">
+    <div class="eyebrow">Passbook &middot; Ledger &middot; Vault</div>
+    <h1>Banking, kept honest by a ledger.</h1>
+    <p>Every deposit, withdrawal, and transfer is written to your passbook the moment it happens &mdash; hashed credentials, PIN-gated transactions, nothing left to memory.</p>
+    <div class="actions">
+        <a href="/register" class="btn btn-primary">Open an account</a>
+        <a href="/login" class="btn btn-secondary">Log in</a>
+    </div>
+
+    <div class="ledger-strip">
+        <div class="stat"><b>bcrypt</b><span>Password &amp; PIN hashing</span></div>
+        <div class="stat"><b>3 tries</b><span>Before lockout</span></div>
+        <div class="stat"><b>PIN</b><span>Required to move money</span></div>
+    </div>
+</div>
+{% endblock %}

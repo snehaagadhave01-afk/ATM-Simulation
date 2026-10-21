@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Secure ATM{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a href="/" class="brand">
+                <span class="mark">$</span>
+                Secure ATM
+            </a>
+            {% if session.get('user_id') %}
+            <nav>
+                <span class="hello">{{ session.get('full_name') }}</span>
+                <a href="/logout" class="btn btn-ghost">Log out</a>
+            </nav>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="wrap">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-box">
+                    {% for message in messages %}
+                        <p class="flash">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+            SECURE ATM SIMULATION &mdash; DEMO SYSTEM, NOT FOR REAL FUNDS
+        </footer>
+    </div>
+</body>
+</html>

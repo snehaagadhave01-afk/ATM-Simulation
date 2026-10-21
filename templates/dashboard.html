@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Secure ATM{% endblock %}
+{% block content %}
+
+<div class="grid">
+    <div class="card balance-panel">
+        <div class="live-row">
+            <span class="live-dot" id="live-dot"></span>
+            <span class="live-label" id="live-label">Connecting&hellip;</span>
+        </div>
+        <div class="label">Account No.</div>
+        <p class="account-no">{{ account.account_no }}</p>
+        <div class="label">Available balance</div>
+        <p class="balance"><span class="currency">$</span><span id="balance-value">{{ "%.2f"|format(account.balance) }}</span></p>
+        <div class="status-row">
+            <span class="status-pill">{{ account.status }}</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Deposit</h2>
+        <form action="/deposit" method="POST" class="form">
+            <label>Amount ($)</label>
+            <input type="number" name="amount" step="0.01" min="0.01" required>
+            <button type="submit" class="btn btn-primary">Deposit</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Withdraw</h2>
+        <form action="/withdraw" method="POST" class="form">
+            <label>Amount ($)</label>
+            <input type="number" name="amount" step="0.01" min="0.01" required>
+            <label>PIN</label>
+            <input type="password" name="pin" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+            <button type="submit" class="btn btn-secondary">Withdraw</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Transfer</h2>
+        <form action="/transfer" method="POST" class="form">
+            <label>Destination account no.</label>
+            <input type="text" name="to_account" required>
+            <label>Amount ($)</label>
+            <input type="number" name="amount" step="0.01" min="0.01" required>
+            <label>PIN</label>
+            <input type="password" name="pin" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+            <button type="submit" class="btn btn-secondary">Transfer</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Ledger &mdash; recent entries</h2>
+    {% if transactions %}
+    <table class="txn-table">
+        <thead>
+            <tr><th>Date</th><th>Entry</th><th>Amount</th><th>Balance after</th><th>Note</th></tr>
+        </thead>
+        <tbody id="txn-body">
+            {% for t in transactions %}
+            <tr>
+                <td>{{ t.created_at }}</td>
+                <td>
+                    {% if t.type in ['DEPOSIT', 'TRANSFER_IN'] %}
+                        <span class="badge badge-credit">Credit</span>
+                    {% else %}
+                        <span class="badge badge-debit">Debit</span>
+                    {% endif %}
+                </td>
+                <td class="{{ 'amount-credit' if t.type in ['DEPOSIT', 'TRANSFER_IN'] else 'amount-debit' }}">
+                    {{ '+' if t.type in ['DEPOSIT', 'TRANSFER_IN'] else '-' }}${{ "%.2f"|format(t.amount) }}
+                </td>
+                <td>${{ "%.2f"|format(t.balance_after) }}</td>
+                <td>{{ t.note }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted" id="empty-ledger-msg">No entries yet &mdash; your first deposit will show up here.</p>
+    {% endif %}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+    const socket = io();
+    const liveDot = document.getElementById("live-dot");
+    const liveLabel = document.getElementById("live-label");
+    const balanceEl = document.getElementById("balance-value");
+    const txnBody = document.getElementById("txn-body");
+    const emptyMsg = document.getElementById("empty-ledger-msg");
+
+    socket.on("connect", () => {
+        liveDot.classList.add("connected");
+        liveLabel.textContent = "Live";
+    });
+
+    socket.on("disconnect", () => {
+        liveDot.classList.remove("connected");
+        liveLabel.textContent = "Reconnecting\u2026";
+    });
+
+    socket.on("balance_update", (data) => {
+        balanceEl.textContent = parseFloat(data.balance).toFixed(2);
+        balanceEl.classList.remove("pulse");
+        void balanceEl.offsetWidth;
+        balanceEl.classList.add("pulse");
+
+        const isCredit = data.type === "DEPOSIT" || data.type === "TRANSFER_IN";
+        const sign = isCredit ? "+" : "-";
+        const badgeClass = isCredit ? "badge-credit" : "badge-debit";
+        const badgeText = isCredit ? "Credit" : "Debit";
+        const amountClass = isCredit ? "amount-credit" : "amount-debit";
+
+        if (emptyMsg) emptyMsg.remove();
+
+        const row = document.createElement("tr");
+        row.className = "new-row";
+        row.innerHTML = `
+            <td>${data.created_at}</td>
+            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+            <td class="${amountClass}">${sign}$${parseFloat(data.amount).toFixed(2)}</td>
+            <td>$${parseFloat(data.balance).toFixed(2)}</td>
+            <td>${data.note}</td>
+        `;
+
+        if (txnBody) {
+            txnBody.prepend(row);
+            while (txnBody.rows.length > 10) {
+                txnBody.deleteRow(-1);
+            }
+        }
+    });
+</script>
+
+{% endblock %}
