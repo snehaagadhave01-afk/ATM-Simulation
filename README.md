@@ -16,11 +16,11 @@ An ATM Simulation project that demonstrates basic banking operations through a s
 
 ## 📸 Screenshots
 
-### Login Screen
-![Login Screen](login.png)
+### Login 
+![login](login.png)
 
-### Main Menu
-![Main Menu](menu.png)
+### menu
+![menu](menu.png)
 
 
 
